@@ -172,7 +172,7 @@
 
         public double WindowToDeviceScale(HwndSource windowHandleSource) {
             double toDevice = windowHandleSource.CompositionTarget.TransformToDevice.M11;
-            if (this.hMonitor == IntPtr.Zero || GetDpiForMonitor(this.hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+            if (this.hMonitor == IntPtr.Zero || GetDpiForMonitorProxy(this.hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
                     out var dpi, out var _) != HResult.Code.S_OK) {
                 return toDevice;
             }
@@ -214,8 +214,15 @@
         [DllImport("User32.dll", SetLastError = true)]
         static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MONITORENUMPROC lpfnEnum, IntPtr dwData);
 
+        delegate HResult GetDpiForMonitorFunction(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+
+        static HResult GetDpiForMonitorFake(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY) {
+            dpiX = dpiY = 96;
+            return HResult.Code.E_NOTIMPL;
+        }
         [DllImport("Shcore.dll")]
         static extern HResult GetDpiForMonitor(IntPtr hMonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
+        static readonly GetDpiForMonitorFunction GetDpiForMonitorProxy;
 
         public delegate bool MONITORENUMPROC(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData);
 
@@ -226,9 +233,14 @@
         static Win32Screen() {
             var user32 = Kernel32.LoadLibrary("user32.dll");
             GetDpiForWindow =
-                Kernel32.GetProcAddress(user32, nameof(User32.GetDpiForWindow)) != null
+                Kernel32.GetProcAddress(user32, nameof(User32.GetDpiForWindow)) != IntPtr.Zero
                     ? new DpiForWindowFunction(User32.GetDpiForWindow)
                     : null;
+            var shcore = Kernel32.LoadLibrary("Shcore.dll");
+            GetDpiForMonitorProxy =
+                !shcore.IsInvalid && Kernel32.GetProcAddress(shcore, nameof(GetDpiForMonitor)) != IntPtr.Zero
+                    ? new GetDpiForMonitorFunction(GetDpiForMonitor)
+                    : new GetDpiForMonitorFunction(GetDpiForMonitorFake);
         }
     }
 }
