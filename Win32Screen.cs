@@ -94,7 +94,8 @@
                 if (oldDeviceInfo.IsPrimary != this.Device.IsPrimary)
                     this.OnPropertyChanged(nameof(this.IsPrimary));
 
-                this.BeginUpdateWorkingArea();
+                if (this.Device.IsActive)
+                    this.BeginUpdateWorkingArea();
                 break;
             default:
                 return IntPtr.Zero;
@@ -122,6 +123,9 @@
             for (int retry = 0; retry < 100; retry++) {
                 var newWorkingArea = this.GetWorkingArea();
                 if (newWorkingArea.IsEmpty) {
+                    if (!this.Device.IsActive)
+                        return;
+
                     await Task.Delay(50);
                     continue;
                 }
@@ -141,7 +145,8 @@
                 this.dirty = true;
                 return;
             }
-            Debug.WriteLine($"failed to update working area for {this.ID}");
+            if (this.Device.IsActive)
+                Debug.WriteLine($"failed to update working area for {this.ID}");
         }
 
         public Matrix TransformFromDevice
