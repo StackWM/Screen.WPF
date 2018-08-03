@@ -22,21 +22,21 @@
             return true;
         }
 
-        public static async Task MoveToScreen([NotNull] Window window, [NotNull] Win32Screen screen) {
+        public static Task MoveToScreen([NotNull] Window window, [NotNull] Win32Screen screen) {
             if (screen == null)
                 throw new ArgumentNullException(nameof(screen));
             if (window == null)
                 throw new ArgumentNullException(nameof(window));
 
             var nativeWindow = window.GetNativeWindow();
-            await nativeWindow.Move(screen.WorkingArea);
+            return nativeWindow.Move(screen.WorkingArea);
         }
 
         /// <summary>
         /// Sets location and size of the window to fit to <see cref="Window.Margin"/> on the specified screen.
         /// Negative margin behavior is undefined.
         /// </summary>
-        public static async Task FitToMargin([NotNull] this Window window, [NotNull] Win32Screen screen) {
+        public static Task FitToMargin([NotNull] this Window window, [NotNull] Win32Screen screen) {
             var handleSource = (HwndSource)PresentationSource.FromVisual(window);
             var nativeWindow = window.GetNativeWindow();
 
@@ -51,7 +51,7 @@
             sizeFix = screen.TransformToDevice.Transform(sizeFix);
             var size = screen.TransformToDevice.Transform(new Vector(finalWidth, finalHeight));
 
-            await nativeWindow.Move(new RectangleF(
+            return nativeWindow.Move(new RectangleF(
                 (screen.WorkingArea.TopLeft().ToWPF() + marginOffset + sizeFix).ToDrawingPoint(),
                 new SizeF((float)size.X, (float)size.Y)));
         }
