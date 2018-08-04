@@ -106,8 +106,13 @@
         unsafe void ResetMonitorInfo() {
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (monitor, hdcMonitor, lprcMonitor, data) => {
                 var info = User32.MONITORINFOEX.Create();
-                if (!User32.GetMonitorInfoEx(monitor, &info))
-                    throw new System.ComponentModel.Win32Exception();
+                if (!User32.GetMonitorInfoEx(monitor, &info)) {
+                    var exception = new System.ComponentModel.Win32Exception();
+                    if (exception.NativeErrorCode == (int)LostTech.Stack.WindowManagement.WinApi.WinApiErrorCode.ERROR_INVALID_MONITOR_HANDLE)
+                        return true;
+                    throw exception;
+                }
+
                 if (new string(info.DeviceName) == this.DeviceName) {
                     this.hMonitor = monitor;
                     return false;
