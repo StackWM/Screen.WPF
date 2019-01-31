@@ -13,6 +13,7 @@
     using System.Windows.Media;
     using LostTech.Stack.Utils;
     using LostTech.Windows.Win32;
+    using Microsoft.Win32;
     using PInvoke;
     using static System.FormattableString;
     using FormsScreen = System.Windows.Forms.Screen;
@@ -62,6 +63,8 @@
             WtsApi.WTSRegisterSessionNotification(this.HwndSource.Handle, NotifySessionFlags.ThisSessionOnly);
             this.HwndSource.AddHook(this.OnWindowMessage);
             this.workingArea = this.GetWorkingArea();
+            this.BeginUpdateWorkingArea();
+            SystemEvents.DisplaySettingsChanged += this.OnDisplaySettingsChanged;
         }
 
         void EnsureUpToDate() {
@@ -81,26 +84,33 @@
             case User32.WindowMessage.WM_DPICHANGED:
             case User32.WindowMessage.WM_SETTINGCHANGE:
             case User32.WindowMessage.WM_DISPLAYCHANGE:
-                var oldDeviceInfo = this.Device;
-                this.Device = Win32ScreenProvider.GetDisplayDevices()
-                    .FirstOrDefault(device => device.Name == this.DeviceName);
-                if (!this.Device.IsValid) {
-                    oldDeviceInfo.StateFlags &= ~(DisplayDeviceStateFlags.AttachedToDesktop |
-                                                  DisplayDeviceStateFlags.PrimaryDevice);
-                    this.Device = oldDeviceInfo;
-                }
-                if (oldDeviceInfo.IsActive != this.Device.IsActive)
-                    this.OnPropertyChanged(nameof(this.IsActive));
-                if (oldDeviceInfo.IsPrimary != this.Device.IsPrimary)
-                    this.OnPropertyChanged(nameof(this.IsPrimary));
-
-                if (this.Device.IsActive)
-                    this.BeginUpdateWorkingArea();
+                this.ResetDeviceInfo();
                 break;
             default:
                 return IntPtr.Zero;
             }
             return IntPtr.Zero;
+        }
+
+        void OnDisplaySettingsChanged(object sender, EventArgs e) => this.ResetDeviceInfo();
+
+        void ResetDeviceInfo() {
+            var oldDeviceInfo = this.Device;
+            this.Device = Win32ScreenProvider.GetDisplayDevices()
+                .FirstOrDefault(device => device.Name == this.DeviceName);
+            if (!this.Device.IsValid) {
+                oldDeviceInfo.StateFlags &= ~(DisplayDeviceStateFlags.AttachedToDesktop |
+                                              DisplayDeviceStateFlags.PrimaryDevice);
+                this.Device = oldDeviceInfo;
+            }
+
+            if (oldDeviceInfo.IsActive != this.Device.IsActive)
+                this.OnPropertyChanged(nameof(this.IsActive));
+            if (oldDeviceInfo.IsPrimary != this.Device.IsPrimary)
+                this.OnPropertyChanged(nameof(this.IsPrimary));
+
+            if (this.Device.IsActive)
+                this.ResetMonitorInfo();
         }
 
         unsafe void ResetMonitorInfo() {
@@ -115,6 +125,8 @@
 
                 if (new string(info.DeviceName) == this.DeviceName) {
                     this.hMonitor = monitor;
+                    if (this.presentationSource != null)
+                        this.BeginUpdateWorkingArea();
                     return false;
                 }
 

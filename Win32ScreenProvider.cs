@@ -5,56 +5,25 @@
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-    using System.Windows;
-    using System.Windows.Interop;
     using LostTech.Windows.Win32;
-    using PInvoke;
-    using Win32Exception = System.ComponentModel.Win32Exception;
+    using Microsoft.Win32;
 
     public sealed class Win32ScreenProvider: IScreenProvider, IDisposable
     {
-        readonly Window detectorWindow;
-        readonly HwndSource hwndSource;
         readonly ObservableCollection<Win32Screen> screens = new ObservableCollection<Win32Screen>();
 
         public ReadOnlyObservableCollection<Win32Screen> Screens { get; }
 
         public Win32ScreenProvider()
         {
-            this.detectorWindow = new Window {
-                ShowInTaskbar = false,
-                Title = nameof(Win32ScreenProvider),
-                WindowStyle = WindowStyle.None,
-                Width = 1,
-                Height = 1,
-            };
-            this.detectorWindow.Show();
-            try {
-                this.hwndSource = (HwndSource) PresentationSource.FromVisual(this.detectorWindow);
-                if (this.hwndSource == null)
-                    throw new CanNotFindDesktopException();
-            } catch (Win32Exception e) {
-                throw new CanNotFindDesktopException(e);
-            } finally
-            {
-                this.detectorWindow.Hide();
-            }
             this.Screens = new ReadOnlyObservableCollection<Win32Screen>(this.screens);
-            this.hwndSource.AddHook(this.OnWindowMessage);
+            SystemEvents.DisplaySettingsChanged += this.SystemEventsOnDisplaySettingsChanged;
             this.UpdateScreens();
         }
 
-        IntPtr OnWindowMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch ((User32.WindowMessage) msg) {
-            case User32.WindowMessage.WM_DISPLAYCHANGE:
-                this.UpdateScreens();
-                break;
-            }
-            return IntPtr.Zero;
-        }
+        void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e) => this.UpdateScreens();
 
         internal static IEnumerable<DisplayDevice> GetDisplayDevices()
         {
@@ -65,8 +34,9 @@
                 yield return device;
         }
 
-        void UpdateScreens()
+        void UpdateScreens([CallerMemberName] string calledFrom = null)
         {
+            Debug.WriteLine("UpdateScreens: " + calledFrom);
             var knownScreens = new List<string>();
             foreach(var device in GetDisplayDevices()) {
                 knownScreens.Add(device.Name);
@@ -88,10 +58,8 @@
             }
         }
 
-        public void Dispose()
-        {
-            this.hwndSource.RemoveHook(this.OnWindowMessage);
-            this.detectorWindow.Close();
+        public void Dispose() {
+            SystemEvents.DisplaySettingsChanged -= this.SystemEventsOnDisplaySettingsChanged;
         }
     }
 }
