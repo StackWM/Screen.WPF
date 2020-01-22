@@ -11,7 +11,6 @@
     using System.Windows;
     using System.Windows.Interop;
     using System.Windows.Media;
-    using LostTech.Stack.Utils;
     using LostTech.Windows.Win32;
     using Microsoft.Win32;
     using PInvoke;

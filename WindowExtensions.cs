@@ -5,7 +5,6 @@
     using System.Windows;
     using System.Windows.Interop;
     using JetBrains.Annotations;
-    using LostTech.Stack.Utils;
     using LostTech.Stack.WindowManagement;
 
     public static class WindowExtensions
