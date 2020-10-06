@@ -94,10 +94,6 @@
       <Project>{f050a999-37fc-4e1c-a1c0-ee2212e49904}</Project>
       <Name>WindowManagement.WPF</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WindowManagement\WindowManagement.csproj">
-      <Project>{B06FC7B7-9033-4BF0-896E-3FD4E24C777D}</Project>
-      <Name>WindowManagement</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
