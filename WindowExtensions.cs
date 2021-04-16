@@ -4,12 +4,14 @@
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Interop;
-    using JetBrains.Annotations;
     using LostTech.Stack.WindowManagement;
 
     public static class WindowExtensions
     {
-        public static async Task<bool> AdjustToClientArea([NotNull] this Window window, [NotNull] Win32Screen screen) {
+        public static async Task<bool> AdjustToClientArea(this Window window, Win32Screen screen) {
+            if (window is null) throw new ArgumentNullException(nameof(window));
+            if (screen is null) throw new ArgumentNullException(nameof(screen));
+
             Vector wpfScreenSize = screen.TransformFromDevice.Transform(screen.WorkingArea.Size.AsWPFVector());
             if (wpfScreenSize.X <= 1 || wpfScreenSize.Y <= 1)
                 return false;
@@ -21,7 +23,7 @@
             return true;
         }
 
-        public static Task MoveToScreen([NotNull] Window window, [NotNull] Win32Screen screen) {
+        public static Task MoveToScreen(Window window, Win32Screen screen) {
             if (screen == null)
                 throw new ArgumentNullException(nameof(screen));
             if (window == null)
@@ -35,7 +37,10 @@
         /// Sets location and size of the window to fit to <see cref="Window.Margin"/> on the specified screen.
         /// Negative margin behavior is undefined.
         /// </summary>
-        public static Task FitToMargin([NotNull] this Window window, [NotNull] Win32Screen screen) {
+        public static Task FitToMargin(this Window window, Win32Screen screen) {
+            if (window is null) throw new ArgumentNullException(nameof(window));
+            if (screen is null) throw new ArgumentNullException(nameof(screen));
+
             var handleSource = (HwndSource)PresentationSource.FromVisual(window);
             var nativeWindow = window.GetNativeWindow();
 
