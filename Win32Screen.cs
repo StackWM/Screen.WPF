@@ -124,8 +124,9 @@
 
                 if (new string(info.DeviceName) == this.DeviceName) {
                     this.hMonitor = monitor;
-                    if (this.presentationSource != null)
-                        this.BeginUpdateWorkingArea();
+                    if (this.presentationSource != null) {
+                        this.detectorWindow.Dispatcher.BeginInvoke(() => this.BeginUpdateWorkingArea());
+                    }
                     return false;
                 }
 
