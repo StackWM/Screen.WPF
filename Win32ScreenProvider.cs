@@ -19,6 +19,7 @@
         public Win32ScreenProvider()
         {
             this.Screens = new ReadOnlyObservableCollection<Win32Screen>(this.screens);
+            SystemEvents.SessionSwitch += this.SystemEventsOnDisplaySettingsChanged;
             SystemEvents.DisplaySettingsChanged += this.SystemEventsOnDisplaySettingsChanged;
             this.UpdateScreens();
         }
