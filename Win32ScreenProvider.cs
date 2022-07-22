@@ -7,24 +7,29 @@
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using System.Windows.Threading;
+
     using LostTech.Windows.Win32;
     using Microsoft.Win32;
 
     public sealed class Win32ScreenProvider: IScreenProvider, IDisposable
     {
         readonly ObservableCollection<Win32Screen> screens = new ObservableCollection<Win32Screen>();
+        readonly Action<Action> dispatcher;
 
         public ReadOnlyObservableCollection<Win32Screen> Screens { get; }
 
-        public Win32ScreenProvider()
+        public Win32ScreenProvider(Action<Action> dispatcher)
         {
+            this.dispatcher = dispatcher;
             this.Screens = new ReadOnlyObservableCollection<Win32Screen>(this.screens);
             SystemEvents.SessionSwitch += this.SystemEventsOnDisplaySettingsChanged;
             SystemEvents.DisplaySettingsChanged += this.SystemEventsOnDisplaySettingsChanged;
             this.UpdateScreens();
         }
 
-        void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e) => this.UpdateScreens();
+        void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
+            => this.dispatcher(() => this.UpdateScreens(nameof(SystemEventsOnDisplaySettingsChanged)));
 
         internal static IEnumerable<DisplayDevice> GetDisplayDevices()
         {
