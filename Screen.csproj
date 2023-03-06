@@ -24,7 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PInvoke.User32" Version="0.7.104" />
+    <PackageReference Include="PInvoke.User32" Version="0.7.124" />
   </ItemGroup>
 
   <ItemGroup>
