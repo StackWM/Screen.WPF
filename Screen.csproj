@@ -7,8 +7,18 @@
     <Deterministic>False</Deterministic>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <Nullable>enable</Nullable>
+
+    <!-- Package stuff -->
+    <!--<PackageLicenseFile>LICENSE</PackageLicenseFile>-->
+    <!--<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>-->
+
+    <!-- The following is recommended for public projects -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <DebugSymbols>true</DebugSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,13 +27,17 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="LostTech.Drawing.Primitives.Extensions" Version="0.0.2" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <!-- The following is recommended for public projects -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
   </ItemGroup>
 
@@ -31,5 +45,5 @@
     <ProjectReference Include="..\WindowManagement.Win32\WindowManagement.Win32.csproj" />
     <ProjectReference Include="..\WindowManagement.WPF\WindowManagement.WPF.csproj" />
   </ItemGroup>
-  
+
 </Project>
