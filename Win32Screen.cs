@@ -11,6 +11,8 @@
     using System.Windows;
     using System.Windows.Interop;
     using System.Windows.Media;
+    using System.Windows.Threading;
+
     using LostTech.Windows.Win32;
     using Microsoft.Win32;
     using PInvoke;
@@ -34,6 +36,9 @@
         bool dirty;
         readonly Window detectorWindow;
         readonly PresentationSource presentationSource;
+        readonly DispatcherTimer workingAreaUpdater = new() {
+            Interval = TimeSpan.FromSeconds(3),
+        };
 
         internal Win32Screen(DisplayDevice displayDevice)
         {
@@ -64,6 +69,7 @@
             this.workingArea = this.GetWorkingArea();
             this.BeginUpdateWorkingArea();
             SystemEvents.DisplaySettingsChanged += this.OnDisplaySettingsChanged;
+            this.workingAreaUpdater.Tick += this.WorkingAreaUpdater_Tick;
         }
 
         void EnsureUpToDate() {
@@ -227,6 +233,17 @@
                        .FirstOrDefault(s => s.DeviceName == this.DeviceName)
                        ?.WorkingArea
                    ?? new RectangleF();
+        }
+
+        void WorkingAreaUpdater_Tick(object? sender, EventArgs e) {
+            if (!this.Device.IsActive) return;
+            this.ResetScreenCache();
+            this.BeginUpdateWorkingArea();
+        }
+
+        void ResetScreenCache() {
+            // use reflection to empty screens cache
+            typeof(FormsScreen).GetField("screens", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)?.SetValue(null, null);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
