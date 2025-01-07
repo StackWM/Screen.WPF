@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>net462;net8.0-windows</TargetFrameworks>
     <RootNamespace>LostTech.Windows</RootNamespace>
     <AssemblyName>LostTech.Windows.Screens</AssemblyName>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
@@ -36,7 +36,7 @@
     </PackageReference>
 
     <!-- The following is recommended for public projects -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 
     <PackageReference Include="PInvoke.User32" Version="0.7.124" />
   </ItemGroup>
